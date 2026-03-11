@@ -20,6 +20,7 @@ void load_comfile(void);	/* Forward declaration */
 
 static int deinit_term, deinit_gsx;
 static void mkpath(char* fullpath, char* path, char* subdir);
+int fileverbose;
 
 
 void dump_regs(FILE *fp, byte a, byte b, byte c, byte d, byte e, byte f,
@@ -253,6 +254,35 @@ void zxcc_xltname(char *name, char *pcmd)
     strcat(name, nbuf);
 }
 
+void usage(void)
+{
+	fprintf(stderr,
+		"zxcc " VERSION " - run CP/M 80 programs under Unix/Linux\n"
+		"\n"
+		"Usage: %s [-fh] comfile [args ...]\n"
+		"\n"
+		"Flags:\n"
+		"  -f              Verbose file operations\n"
+		"  -h              Show this help message\n"
+		"\n"
+		"  comfile         CP/M .COM/.CPM program to execute\n"
+		"  args            Arguments passed to the CP/M program\n"
+		"\n"
+		"Argument prefixes:\n"
+		"  arg             Parsed as a filename (Unix path -> CP/M drive:name)\n"
+		"  -arg            Passed through as-is (no filename parsing)\n"
+		"  +arg            Parsed as a filename, appended to previous argument\n"
+		"  +-arg           Appended as-is (no filename parsing, no space)\n"
+		"\n"
+		"Drive mappings:\n"
+		"  A: = %s\n"
+		"  B: = %s\n"
+		"  C: = %s\n"
+		"  P: = current directory (default drive)\n",
+		progname, bindir80, libdir80, incdir80);
+	zxcc_exit(1);
+}
+
 /* main() parses the arguments to CP/M form. argv[1] is the name of the CP/M
   program to load; the remaining arguments are arguments for the CP/M program.
 
@@ -283,14 +313,38 @@ int main(int ac, char **av)
     {
         fprintf(stderr,"%s: type lengths incorrect; edit typedefs "
                                "and recompile.\n", progname);
-        zxcc_exit(1); 
+        zxcc_exit(1);
+    }
+
+    /* Process leading flags before the comfile name.
+     * Only args before the comfile are treated as zxcc flags;
+     * after the comfile, -args are passed through to CP/M as before.
+     */
+    while (argc >= 2 && argv[1][0] == '-')
+    {
+        char *flags = &argv[1][1];
+
+        while (*flags) switch (*flags++)
+        {
+            case 'h':
+            usage();
+            break;
+
+            case 'f':
+            fileverbose = 1;
+            break;
+
+            default:
+            fprintf(stderr, "%s: Unknown flag '-%c'\n",
+                progname, flags[-1]);
+            zxcc_exit(1);
+        }
+        argc--;
+        argv++;
     }
 
     if (argc < 2)
-    {
-        fprintf(stderr,"%s: No CP/M program name provided.\n",progname);
-        zxcc_exit(1);
-    }
+        usage();
 
     /* Parse arguments. An argument can be either:
 

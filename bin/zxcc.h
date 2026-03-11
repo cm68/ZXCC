@@ -101,6 +101,7 @@ extern int argc;
 extern byte RAM[65536]; /* The Z80's address space */
 extern int file_conin;  /* non zero if stdin not a terminal */
 extern int eof_conin;   /* non zero if eof of stdin */
+extern int fileverbose;
 /* Z80 CPU emulation */
 
 #include "z80.h"

@@ -61,15 +61,68 @@ int fcbforce(byte *fcb, byte *odrv)
        LIBDIR80 or INCDIR80 (depending on the type of the file).
  */
 
+static void fcb_to_name(byte *fcb, char *buf)
+{
+	int i, p = 0;
+	int drv = fcb[0] & 0x7F;
+
+	if (drv) buf[p++] = 'A' + drv - 1;
+	else     buf[p++] = 'P';
+	buf[p++] = ':';
+
+	for (i = 1; i <= 8; i++)
+	{
+		char c = fcb[i] & 0x7F;
+		if (c != ' ') buf[p++] = c;
+	}
+	if ((fcb[9] & 0x7F) != ' ')
+	{
+		buf[p++] = '.';
+		for (i = 9; i <= 11; i++)
+		{
+			char c = fcb[i] & 0x7F;
+			if (c != ' ') buf[p++] = c;
+		}
+	}
+	buf[p] = 0;
+}
+
 word x_fcb_open(byte *fcb, byte *dma)
 {
-	word rv = fcb_open(fcb, dma);
+	word rv;
 	byte odrv;
+
+	if (fileverbose)
+	{
+		char name[16];
+		int drv = fcb[0] & 0x7F;
+		char *dir;
+
+		fcb_to_name(fcb, name);
+		if (!drv) drv = cpm_drive + 1;
+		dir = xlt_getcwd(drv - 1);
+		fprintf(stderr, "%s: open %s -> %s\n", progname, name,
+			dir ? dir : "(unmapped)");
+	}
+
+	rv = fcb_open(fcb, dma);
 
 	if (rv == 0xFF)
 	{
 		if (fcbforce(fcb, &odrv))
 		{
+			if (fileverbose)
+			{
+				char name[16];
+				int drv = fcb[0] & 0x7F;
+				char *dir;
+
+				fcb_to_name(fcb, name);
+				dir = xlt_getcwd(drv - 1);
+				fprintf(stderr, "%s: retry %s -> %s\n",
+					progname, name,
+					dir ? dir : "(unmapped)");
+			}
 			rv = fcb_open(fcb, dma);
 			*fcb = odrv;
 		}
