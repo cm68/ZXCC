@@ -81,8 +81,6 @@
  * Please let me know if the situation arises.
 */
 
-#ifdef FILETRACKER
-
 typedef struct _track {
 	struct _track* next;
 	int handle;
@@ -99,14 +97,11 @@ static track_t* rmHandle(track_t* s) {
 	return next;
 }
 
-#endif
-
 #ifdef DEBUG
 void show_fcb_Msg(cpm_byte* fcb);
 #endif
 
 void releaseFile(char* fname) {
-#ifdef FILETRACKER
 	track_t* s = (track_t*)&openFiles;
 	while (s->next)
 		if (strcmp(s->next->fname, fname) == 0) {
@@ -115,12 +110,10 @@ void releaseFile(char* fname) {
 		}
 		else
 			s = s->next;
-#endif
 }
 
 
 int trackFile(char* fname, void* fcb, int fd) {
-#ifdef FILETRACKER
 	track_t* s = (track_t*)&openFiles;
 	while (s->next) {	/* find any existing fcb or fd */
 		if (s->next->fcb == fcb || s->next->handle == fd) {
@@ -143,7 +136,6 @@ int trackFile(char* fname, void* fcb, int fd) {
 		s->handle = fd;
 		openFiles = s;
 	}
-#endif
 
 	return fd;
 }
