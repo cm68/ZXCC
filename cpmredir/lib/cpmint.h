@@ -137,6 +137,12 @@ EXT cpm_word redir_ro_drives INIT(0);
 /* Convert FCB to a Unix filename, returning 1 if it's ambiguous */
 int redir_fcb2unix(cpm_byte *fcb, char *fname);
 
+/* Resolve a filename case-insensitively against its parent directory */
+void redir_resolve_case(char *fname);
+
+/* Unlink all case-insensitive matches, leave fname as lowercase */
+void redir_purge_case(char *fname);
+
 /* Open FCB, set file attributes */
 int redir_ofile(cpm_byte * fcb, char *s);
 

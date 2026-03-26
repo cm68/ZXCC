@@ -108,6 +108,99 @@ void redir_put_fcb_pos(cpm_byte* fcb, long npos)
 
 
 
+/* Given a full path, resolve the filename portion case-insensitively.
+ * If the file exists as-is, do nothing.  Otherwise scan the directory
+ * for a match (any case) and rewrite the basename in place. */
+
+void redir_resolve_case(char *fname)
+{
+	struct stat st;
+	DIR *dir;
+	struct dirent *de;
+	char *slash, *base;
+	char dirpath[CPM_MAXPATH];
+	size_t dlen;
+
+	/* If the exact name already exists, nothing to do */
+	if (stat(fname, &st) == 0) return;
+
+	slash = strrchr(fname, '/');
+	if (!slash) return;		/* no directory component */
+
+	dlen = slash - fname + 1;	/* include the trailing '/' */
+	memcpy(dirpath, fname, dlen);
+	dirpath[dlen] = '\0';
+	base = slash + 1;
+
+	dir = opendir(dirpath);
+	if (!dir) return;
+
+	while ((de = readdir(dir)) != NULL)
+	{
+		/* case-insensitive compare without pulling in <strings.h> */
+		const char *a = de->d_name, *b = base;
+		while (*a && *b && tolower((unsigned char)*a) ==
+		                    tolower((unsigned char)*b))
+		{ a++; b++; }
+		if (*a == '\0' && *b == '\0')
+		{
+			/* match – rewrite basename with the on-disk spelling */
+			strcpy(base, de->d_name);
+			break;
+		}
+	}
+	closedir(dir);
+}
+
+/* Remove all case-insensitive matches of the basename in fname's directory,
+ * then rewrite the basename to lowercase, ready for creation. */
+
+void redir_purge_case(char *fname)
+{
+	DIR *dir;
+	struct dirent *de;
+	char *slash, *base;
+	char dirpath[CPM_MAXPATH];
+	char target[CPM_MAXPATH];
+	size_t dlen;
+
+	slash = strrchr(fname, '/');
+	if (!slash) return;
+
+	dlen = slash - fname + 1;
+	memcpy(dirpath, fname, dlen);
+	dirpath[dlen] = '\0';
+	base = slash + 1;
+
+	dir = opendir(dirpath);
+	if (!dir) return;
+
+	while ((de = readdir(dir)) != NULL)
+	{
+		const char *a = de->d_name, *b = base;
+		while (*a && *b && tolower((unsigned char)*a) ==
+		                    tolower((unsigned char)*b))
+		{ a++; b++; }
+		if (*a == '\0' && *b == '\0')
+		{
+			strcpy(target, dirpath);
+			strcat(target, de->d_name);
+			releaseFile(target);
+			unlink(target);
+		}
+	}
+	closedir(dir);
+
+	/* Ensure basename is lowercase (it already should be from
+	 * redir_fcb2unix, but be explicit) */
+	{
+		char *p;
+		for (p = base; *p; p++)
+			if (isupper((unsigned char)*p))
+				*p = tolower((unsigned char)*p);
+	}
+}
+
 /* Passed a CP/M FCB, convert it to a unix filename. Turn its drive back into
  * a path. */
 
@@ -143,6 +236,10 @@ int redir_fcb2unix(cpm_byte* fcb, char* fname)
 			strcat(fname, s);
 		}
 	}
+	/* For non-wildcard names, resolve case-insensitively so that
+	 * FOO.C on disk is found even though CP/M asked for foo.c */
+	if (!q) redir_resolve_case(fname);
+
 	return q;
 }
 

@@ -56,12 +56,9 @@ static int cpm_match(char *s, cpm_byte *fcb, cpm_byte *pattern)
     m = strlen(s);
     for (n = 0; n < 11; n++) pattern[n] = ' ';
 
-    /* Check: No uppercase letters 
-         *        This check can be eliminated on a filesystem that isn't 
-         *        case sensitive. */
-#if CASE_SENSITIVE_FILESYSTEM
-    for (n = 0; n < m; n++) if (isupper(s[n])) return 0;
-#endif
+    /* Case-insensitive matching: filenames from readdir() are uppercased
+     * by upper() below before comparison with the FCB pattern, so any
+     * case on disk will match the CP/M name. */
     /* Exclude invalid names. "." and ".." aren't valid CP/M names, but
          * if doing a full search, they show up anyway. */
 

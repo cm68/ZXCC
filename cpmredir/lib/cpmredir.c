@@ -191,12 +191,7 @@ cpm_word fcb_close(cpm_byte* fcb)
 #endif
 		return 0;
 	}
-	trackFile(NULL, fcb, handle);   /* stop tracking */
-	if (close(handle))
-	{
-		redir_Msg("Ret: -1\n");
-		return 0xFF;
-	}
+	trackFile(NULL, fcb, handle);   /* stop tracking (also closes handle) */
 	redir_Msg("Ret: 0\n");
 	return 0;
 }
@@ -362,11 +357,14 @@ cpm_word fcb_creat(cpm_byte* fcb, cpm_byte* dma)
 		if (handle) return redir_xlt_err();
 		return 0;
 	}
-	releaseFile(fname);  /* purge any open handles for this file */
+	/* Remove all case-variants of this name (Foo.C, FOO.C, etc.)
+	 * and ensure fname is lowercase for the new file. */
+	redir_purge_case(fname);
+
 	handle = open(fname, O_RDWR | O_CREAT | O_EXCL | O_BINARY,
 		S_IREAD | S_IWRITE);
 	if (handle < 0) return 0xFF;
-	
+
 	trackFile(fname, fcb, handle); /* track new file */
 
 	fcb[MAGIC_OFFSET] = 0xFD;   /* "Magic number"  */
