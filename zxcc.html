@@ -121,7 +121,9 @@ enter arguments to these in the zxcc format given below.
 
 <P>Where the documentation allows you to enter a CP/M filename, you should
 instead enter a UNIX one. The filename itself (as opposed to any directories in
-its path) must obey CP/M 8.3 naming conventions and be all lowercase.
+its path) must obey CP/M 8.3 naming conventions. Filenames are matched
+case-insensitively; newly created files are always lowercase on the host
+filesystem.
 <P>Where the documentation requires a CP/M driveletter / user number 
   <blockquote>-I2:C:</blockquote> you should enter a path complete with 
   trailing slash: <blockquote>-I/usr/src/linux-80/include/</blockquote>
@@ -146,12 +148,18 @@ computers;
 <P>Syntax for zxcc is:
 
 <BLOCKQUOTE>
-	zxcc <i>comfile.com</i> arg1 arg2 ...
+	zxcc [-fh] <i>comfile.com</i> arg1 arg2 ...
 </BLOCKQUOTE>
 
-<P>The comfile is the program to run; <em>zxcc</em> searches the current 
-directory and <strong>BINDIR80</strong> for it. 
-<P>The arguments are parsed in this way:
+<P>Flags (before the comfile):
+<DL>
+<DT>-f<DD>Verbose file operations.
+<DT>-h<DD>Show usage message and exit.
+</DL>
+
+<P>The comfile is the program to run; <em>zxcc</em> searches the current
+directory and <strong>BINDIR80</strong> for it.
+<P>The arguments (after the comfile) are parsed in this way:
 
 <UL>
 <LI>Any argument starting with a - sign is passed to the CP/M program as-is,

@@ -1,14 +1,15 @@
                                   zxcc v0.5.7
 
-   zxcc is a wrapper for the Hi-Tech C CP/M compiler, allowing it to be
-   used as a cross-compiler under UNIX. Version 0.5.0 also works with the
-   build tools necessary to assemble CP/M 3 (MAC, RMAC, LINK, GENCOM).
+   zxcc is a wrapper for the Hi-Tech C CP/M compiler, allowing it to be used
+   as a cross-compiler under UNIX. Version 0.5.0 also works with the build
+   tools necessary to assemble CP/M 3 (MAC, RMAC, LINK, GENCOM).
 
    New in this version:
-     * Compiles on boxes where sync() does not return int (reported by
+
+     • Compiles on boxes where sync() does not return int (reported by
        multiple users).
-     * BDOS function 10 takes a pointer to unsigned char, thus allowing
-       input buffers longer than 128 bytes (Andy Parkins)
+     • BDOS function 10 takes a pointer to unsigned char, thus allowing input
+       buffers longer than 128 bytes (Andy Parkins)
 
 Setting up
 
@@ -19,28 +20,29 @@ Setting up
    <http://www.nenie.org/cpcip/index.html#zmac>).
 
    Previous versions of ZXCC could be compiled under DOS using DJGPP; this
-   may still be possible, but has not been tested since the build system
-   was changed to use the GNU autotools.
+   may still be possible, but has not been tested since the build system was
+   changed to use the GNU autotools.
 
-   This version of zxcc contains copies of the CPMIO and CPMREDIR
-   libraries, so you won't need to obtain them separately.
+   This version of zxcc contains copies of the CPMIO and CPMREDIR libraries,
+   so you won't need to obtain them separately.
 
-   You will need the tools you want to use; either the Hi-Tech C compiler
-   for CP/M <[2]http://www.hitech.com.au> or Digital Research's tools at
-   <[3]http://www.cpm.z80.de> Once you have obtained the tools,
-   documentation and possibly the library source, you need to decide where
-   to put the files. zxcc uses three directories:
-     * BINDIR80 (by default, /usr/local/lib/cpm/bin80) holds the compiler
+   You will need the tools you want to use; either the Hi-Tech C compiler for
+   CP/M <[2]http://www.hitech.com.au> or Digital Research's tools at
+   <[3]http://www.cpm.z80.de> Once you have obtained the tools, documentation
+   and possibly the library source, you need to decide where to put the
+   files. zxcc uses three directories:
+
+     • BINDIR80 (by default, /usr/local/lib/cpm/bin80) holds the compiler
        itself. You should copy the compiler .com files (or MAC, RMAC etc.)
        and bios.bin to this directory.
-     * LIBDIR80 (by default, /usr/local/lib/cpm/lib80) holds the C
-       libraries libc.lib, libf.lib, crtcpm.obj and rrtcpm.obj.
-     * INCDIR80 (by default, /usr/local/lib/cpm/include80) holds the
-       compiler .h files.
+     • LIBDIR80 (by default, /usr/local/lib/cpm/lib80) holds the C libraries
+       libc.lib, libf.lib, crtcpm.obj and rrtcpm.obj.
+     • INCDIR80 (by default, /usr/local/lib/cpm/include80) holds the compiler
+       .h files.
 
    The locations of these directories are normally set by the configure
-   script; you can override them by editing zxcc.h and uncommenting the
-   lines that redefine them.
+   script; you can override them by editing zxcc.h and uncommenting the lines
+   that redefine them.
 
    Once you have installed zxcc and the build tools, try building Hello
    World:
@@ -54,10 +56,12 @@ Setting up
    or for RMAC:
 
      CSEG
+
      LXI D,HELLO
      MVI C,9
      CALL 5
      RST 0
+
      HELLO: DB 'Hello World',13,10,'$'
 
    To compile the first example, type
@@ -77,14 +81,13 @@ Setting up
      zxcc link.com hello
 
    and run it as above. NOTE: RMAC requires that lines be terminated with
-   CR/LF. You may need to put a unix2dos command in your makefile before
-   you invoke RMAC.
+   CR/LF. You may need to put a unix2dos command in your makefile before you
+   invoke RMAC.
 
 Using zxcc
 
-   For detailed instructions, see the documentation for Hi-Tech C or the
-   CP/M tools. zxcc behaves in the same way, but note the following
-   points:
+   For detailed instructions, see the documentation for Hi-Tech C or the CP/M
+   tools. zxcc behaves in the same way, but note the following points:
 
   Program names
 
@@ -100,32 +103,33 @@ Using zxcc
    . The programs to use are:
 
    zxc
-          The equivalent of C.COM.
+   The equivalent of C.COM.
 
    zxas
-          The equivalent of ZAS.COM.
+   The equivalent of ZAS.COM.
 
    zxlink
-          The equivalent of LINK.COM.
+   The equivalent of LINK.COM.
 
    zxlibr
-          The equivalent of LIBR.COM.
+   The equivalent of LIBR.COM.
 
    zxobjtohex
-          The equivalent of OBJTOHEX.COM.
+   The equivalent of OBJTOHEX.COM.
 
-   All these programs work by converting their arguments to a form
-   suitable for zxcc, and then invoking zxcc.
+   All these programs work by converting their arguments to a form suitable
+   for zxcc, and then invoking zxcc.
 
-   There are no front-end programs for the CP/M build tools; you will have
-   to enter arguments to these in the zxcc format given below.
+   There are no front-end programs for the CP/M build tools; you will have to
+   enter arguments to these in the zxcc format given below.
 
   Filenames
 
    Where the documentation allows you to enter a CP/M filename, you should
    instead enter a UNIX one. The filename itself (as opposed to any
-   directories in its path) must obey CP/M 8.3 naming conventions and be
-   all lowercase.
+   directories in its path) must obey CP/M 8.3 naming conventions. Filenames
+   are matched case-insensitively; newly created files are always lowercase
+   on the host filesystem.
 
    Where the documentation requires a CP/M driveletter / user number
 
@@ -144,27 +148,37 @@ Technical
 
    zxcc behaves like the emulator com, allowing CP/M programs to be used
    transparently from a UNIX prompt. However com:
-     * Emulates all of CP/M 2, rather than a subset of CP/M 3;
-     * Is designed for general use, not tailored to Hi-Tech C;
-     * Is written partly in assembly language and will only run on
+
+     • Emulates all of CP/M 2, rather than a subset of CP/M 3;
+     • Is designed for general use, not tailored to Hi-Tech C;
+     • Is written partly in assembly language and will only run on
        68000-based computers;
-     * Cannot map UNIX directories to CP/M drives;
-     * Contains some bugs connected with command parsing and file I/O.
+     • Cannot map UNIX directories to CP/M drives;
+     • Contains some bugs connected with command parsing and file I/O.
 
    Syntax for zxcc is:
 
-     zxcc comfile.com arg1 arg2 ...
+     zxcc [-fh] comfile.com arg1 arg2 ...
 
-   The comfile is the program to run; zxcc searches the current directory
-   and BINDIR80 for it.
+   Flags (before the comfile):
 
-   The arguments are parsed in this way:
-     * Any argument starting with a - sign is passed to the CP/M program
+   -f
+   Verbose file operations.
+
+   -h
+   Show usage message and exit.
+
+   The comfile is the program to run; zxcc searches the current directory and
+   BINDIR80 for it.
+
+   The arguments (after the comfile) are parsed in this way:
+
+     • Any argument starting with a - sign is passed to the CP/M program
        as-is, minus the leading - sign.
-     * Any argument starting with a + sign is parsed as a filename (see
+     • Any argument starting with a + sign is parsed as a filename (see
        below) and then concatenated to the previous argument.
-     * Any argument starting "+-" is concatenated without being parsed.
-     * All other arguments are parsed as filenames. The UNIX pathname is
+     • Any argument starting "+-" is concatenated without being parsed.
+     • All other arguments are parsed as filenames. The UNIX pathname is
        converted to a CP/M driveletter.
 
    For example:
@@ -180,31 +194,32 @@ Technical
 
 Errors
 
-   Any errors raised by the zxcc runtime system will be prefixed with
-   zxcc:. Some errors you may encounter are:
+   Any errors raised by the zxcc runtime system will be prefixed with zxcc:.
+   Some errors you may encounter are:
 
    Unsupported BDOS call
-          Part of CP/M 3 that the program uses has not been emulated. Add
-          the required functionality to zxbdos.c and recompile.
+   Part of CP/M 3 that the program uses has not been emulated. Add the
+   required functionality to zxbdos.c and recompile.
 
    Z80 encountered invalid trap
-          The CP/M program being run attempted to call the zxcc runtime
-          system with an unknown call number. This will happen if the
-          program was written for my emulator "Joyce".
+   The CP/M program being run attempted to call the zxcc runtime system with
+   an unknown call number. This will happen if the program was written for my
+   emulator "Joyce".
 
 Acknowledgements
 
-     * Hi-Tech C was written by Hi-Tech Software.
-     * The Z80 emulation engine was written by Ian Collier.
-     * Thanks to Jacob Nevins, Andy Parkins and others for bug fix
+     • Hi-Tech C was written by Hi-Tech Software.
+     • The Z80 emulation engine was written by Ian Collier.
+     • Thanks to Jacob Nevins, Andy Parkins and others for bug fix
        suggestions.
-     __________________________________________________________________
 
+   ══════════════════════════════════════════════════════════════════════════
 
     John Elliott, 28 March 2003
 
 References
 
+   Visible links
    1. http://www.nenie.org/cpcip/index.html#zmac
    2. http://www.hitech.com.au/
    3. http://www.cpm.z80.de/
